@@ -1,0 +1,1 @@
+Write a static method which takes an integer argument and returns a collection of prime factors in numerical sequence.
