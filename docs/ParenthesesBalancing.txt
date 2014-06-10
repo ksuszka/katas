@@ -1,0 +1,21 @@
+Assignment idea taken from Functional Programming course by Martin Odersky.
+
+Write a function which verifies the balancing of parentheses in a string. For example, the function should return true for the following strings:
+- (if (zero? x) max (/ 1 x))
+- I told him (that it’s not (yet) done). (But he wasn’t listening)
+
+The function should return false for the following strings:
+- :-)
+- ())(
+
+The last example shows that it’s not enough to verify that a string contains the same number of opening and closing parentheses.
+
+
+Extended case:
+Add support for checking different types of brackets. For example, the function should return true for the following strings:
+- [foo (bar {foo})]
+- {{}[(){}]()}()
+
+The function should return false for the following strings:
+- [{()]}
+- (([{]}))
