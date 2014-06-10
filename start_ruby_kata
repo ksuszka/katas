@@ -1,0 +1,94 @@
+#!/usr/bin/env ruby
+
+# Script for scaffolding kata in Ruby language.
+
+require 'fileutils'
+
+if ARGV.length < 2
+  abort "Usage: #{File.basename($0)} <kata_name> <class_name>"
+end
+
+def normalize_kata_name(kata_name)
+  (kata_name =~ /(^kata)|(kata$)/i) ? kata_name : kata_name + "Kata"
+end
+
+def find_full_kata_name(kata_name)
+  index = Dir.entries(".").
+    select { |n| n.start_with?(kata_name) }.
+    map { |n| n[kata_name.length..-1][/^\d+/] }.max.to_i + 1
+  kata_name + index.to_s
+end
+def find_root_directory(full_kata_name, kata_type)
+   full_kata_name + "_" + kata_type
+end
+
+kata_name = normalize_kata_name(ARGV[0])
+class_name = ARGV[1]
+
+full_kata_name = find_full_kata_name(kata_name)
+project_directory = find_root_directory(full_kata_name, "ruby")
+
+# First - prepare project file structure
+
+# Planned directory structure:
+# - <KataName><index>_ruby
+#   - app
+#     - <class_filename>.rb
+#   - spec
+#     - <class_filename>_spec.rb
+#   Guardfile
+
+# Convert CamelCase class name to snake_case file name
+class_filename = class_name.each_char.map {|c| c==c.upcase ? "_#{c.downcase}" : c}.join.sub(/^_/, '')
+base_app_filename = File.join("app", "#{class_filename}.rb")
+base_spec_filename = File.join("spec", "#{class_filename}_spec.rb")
+app_filename = File.join(project_directory, base_app_filename)
+spec_filename = File.join(project_directory, base_spec_filename)
+
+puts "Kata:       #{kata_name}"
+puts "Full name:  #{full_kata_name}"
+puts "Class:      #{class_name}"
+puts "App file:   #{app_filename}"
+puts "RSpec file: #{spec_filename}"
+
+def create_file(filename, content)
+  dirname = File.dirname(filename)
+  if (!Dir.exists?(dirname))
+    puts "Creating directory \"#{dirname}\""
+    FileUtils.mkpath(dirname)
+  end
+  puts "Creating file \"#{filename}\"..."
+  File.open(filename, 'w+') { |f| f.write(content) }
+end
+
+create_file(app_filename, <<END_OF_TEMPLATE)
+# Kata: #{full_kata_name}
+# Created #{Time.now}
+
+class #{class_name}
+  
+end
+END_OF_TEMPLATE
+
+create_file(spec_filename, <<END_OF_TEMPLATE)
+# Kata: #{full_kata_name}
+# Created #{Time.now}
+
+require "./#{base_app_filename}"
+
+describe #{class_name} do
+  context "something" do
+    it "should do something when something" do
+      expect(1).to eq(2)
+    end
+  end
+end
+END_OF_TEMPLATE
+
+# Second - run tools
+system("mate #{app_filename}")
+system("mate #{spec_filename}")
+
+Dir.chdir(project_directory)
+system("guard init rspec")
+system("guard -c")
